@@ -135,25 +135,33 @@ NOTES:
 
 #endif
 //1
-/* 
+/*
  * bitXor - x^y using only ~ and & 
  *   Example: bitXor(4, 5) = 1
  *   Legal ops: ~ &
  *   Max ops: 14
  *   Rating: 1
  */
+/*
+要利用真值表来做，要先推导数学公式在开始，而不是通过举例子来凑
+这里主要考的还是公式转化是否正确精准
+*/
 int bitXor(int x, int y) {
-  return 2;
+return ~(~(x & ~y) & ~(~x & y));
 }
 /* 
+
  * tmin - return minimum two's complement integer 
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 4
  *   Rating: 1
  */
-int tmin(void) {
 
-  return 2;
+/*
+ 000
+ */
+int tmin(void) {
+  return (1<<30)<<1;
 
 }
 //2
@@ -164,8 +172,12 @@ int tmin(void) {
  *   Max ops: 10
  *   Rating: 1
  */
+ /*
+通过！！来强行的把数字压缩在一位，也就是个位
+同时通过满足大部分条件加剔除corner case来简化思路完成任务
+*/
 int isTmax(int x) {
-  return 2;
+  return (!(~(x ^ (x + 1)))) & (!!(x + 1));
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +188,9 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int y = 170 + (170<<8) + (170 <<16) + (170<<24);
+  int z = y & x;
+  return !(z ^ y) ;
 }
 /* 
  * negate - return -x 
@@ -186,10 +200,10 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+ return ~x+1;
 }
 //3
-/* 
+/* 48
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
  *   Example: isAsciiDigit(0x35) = 1.
  *            isAsciiDigit(0x3a) = 0.
@@ -198,8 +212,24 @@ int negate(int x) {
  *   Max ops: 15
  *   Rating: 3
  */
+ /*
+ 0011 0000
+ 0011 1001
+ 不大于这个范围
+##!(y >> 8) == 0
+ y = x & 1111 1111 255
+ 前半部分和后半部分
+ 前半部分：
+## !(y>>4) ^ 3 == 0
+ 后半部分；
+((y & 15) +(~9+1) >>31) ^ 0 == 1 
+ */
 int isAsciiDigit(int x) {
-  return 2;
+  int y = x & 255;
+  int h = !((y>>4) ^ 3);
+  int m = (((y & 15) +(~10+1)) >>31) ^ 0;
+  int z = !((x >> 8)^0);
+  return (h & m) & z;
 }
 /* 
  * conditional - same as x ? y : z 
@@ -208,8 +238,35 @@ int isAsciiDigit(int x) {
  *   Max ops: 16
  *   Rating: 3
  */
+ /*
+ 判断是不是，先强行转化
+m = ！！x
+ 返回1或者0
+ x真返回y：
+ a = (~m + 1) & y =y
+ ## b = (~1) & z
+有问题需要调整
+需要有一个x=m的时候可以减去的量,而0的时候严格等于0的量
+设置为t
+m = 1 t = (~1) & z
+m = 0 t = 0   
+t = (~m + 1) & ((~1) & z)
+ x假返回z：
+ b = (~m) & z = z
+ a = 0
+ 如果用加法：
+ a + b的话
+ m = 1: y + (~1) & z 
+ m = 0: z 
+  
+ */
 int conditional(int x, int y, int z) {
-  return 2;
+ int m = !(!x);
+ int a = (~m + 1) & y;
+ int b = (~m) & z;
+ int t = (~m + 1) & ((~1) & z);
+ int c = a + b + (~t + 1) ;
+  return c;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -218,7 +275,14 @@ int conditional(int x, int y, int z) {
  *   Max ops: 24
  *   Rating: 3
  */
+/*
+转化为大于问题，最后取反
+m = ~y + 1 = -y
+不溢出：
+  
+*/
 int isLessOrEqual(int x, int y) {
+  
   return 2;
 }
 //4
