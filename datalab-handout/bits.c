@@ -276,14 +276,25 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 /*
-转化为大于问题，最后取反
-m = ~y + 1 = -y
-不溢出：
-  
+可能溢出的情况里面，x和y的符号是不同的可以直接看符号位来判断关系
+而不溢出的情况可以通过正常的加减法，然后提取符号位来进行判断
+然后&&和||不能使用的弊端，可以将数据变成0和1，然后在这些单位的情况下&&==&，||==|
+负数边界不能移动过来或者说移过来需要点变化技巧
+
 */
 int isLessOrEqual(int x, int y) {
+  int x_sign = (x >> 31) & 1;
+  int y_sign = (y >> 31) & 1; 
+  int t = ~y + 1;
+  int t_sign = (t >> 31) & 1;
+//异号直接判断符号
+  int diff_sign = x_sign ^ y_sign;
+//同号
+  int m = x + t;
+  int m_sign = (m >> 31) & 1;
+  int k = (diff_sign & x_sign)|((!diff_sign)& m_sign)|(!m);
   
-  return 2;
+  return k ;
 }
 //4
 /* 
@@ -293,9 +304,23 @@ int isLessOrEqual(int x, int y) {
  *   Legal ops: ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 4 
+ * 32位 
+ * 00010000 00....
+ * x ^ (~x + 1)
+ * x == 0:
+ * 最高位 0 ^ 0 = 0
+ * x != 0
+ * 最高位 = 1
+ * 
+ * 
  */
 int logicalNeg(int x) {
-  return 2;
+    int y = ~x + 1;
+    int z = y ^ x;
+    int m = ((z >> 31) & 1)^1;
+    int x_sign =~( (x >>31) & 1);
+   
+  return m &x_sign;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -310,6 +335,7 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
+  
   return 0;
 }
 //float
