@@ -333,10 +333,38 @@ int logicalNeg(int x) {
  *  Legal ops: ! ~ & ^ | + << >>
  *  Max ops: 90
  *  Rating: 4
+ * 二分法来判断有没有0
+ * 表示一个数字：
+ * 如果是正数，需要一个符号位以及找最高的1在哪
+ * 如果是负数，需要一个符号位以及找最高的0在哪
+ * 因为负数前面全是1，只有0时表示有效信息的
+ * 思路是利用！！来判断相应的几个位数里面有没有对应的东西
+ * 但是！！只能判断有没有1，有没有0不能判断
+ * 需要取反，归为一类问题
+ * 
  */
 int howManyBits(int x) {
+  int x_sign = x >> 31;
+  int m = x ^ x_sign;
+
+  //检测 高16位数
+  int m_16 = (!!(m >> 16)) << 4;
+  m = m >> m_16;
   
-  return 0;
+  //检测 剩余的位数
+  int m_8 =  (!!(m >> 8))<< 3;
+  m = m >> m_8;
+
+  int m_4 = (!!(m >> 4))<<2;
+  m = m >> m_4;
+
+  int m_2 = (!!(m >> 2))<<1;
+  m = m >> m_2;
+
+  int m_1 = (!!(m >> 1));
+  m = m >> m_1;
+  
+  return m_16 + m_8 + m_4 + m_2 + m_1 + m + 1;
 }
 //float
 /* 
@@ -351,7 +379,21 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  int sign = uf & (1<<31);
+  int exp = (uf >> 23) & 0xFF;
+  int frac = uf & 0x7FFFFF;
+
+  if(exp == 255)
+  return uf;
+  
+  if(exp == 0)
+  return sign | (uf<<1);
+  
+  exp = exp + 1;
+  if(exp == 255)
+  return sign | (0xFF << 23);
+
+  return sign | (exp << 23) | frac;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -366,7 +408,30 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int sign = 1 & (uf >> 31);
+  int exp = 0xFF & (uf >> 23);
+  int frac = uf & 0x7FFFFF;
+
+  int E = exp - 127;
+  if(E < 0){
+    return 0;
+  }
+  if(E >= 31)
+  return  0x80000000u;
+
+  frac = frac | 0x800000;
+
+  if(E >= 23){
+    frac = frac << (E - 23);
+  }
+  else{
+    frac = frac >> (23 - E);
+  }
+  if(sign){
+    return -frac;
+  }
+  return frac;
+
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -382,5 +447,14 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if(x > 127)
+    return 0xFF << 23;
+    if(x >= -126){
+      int e = x + 127;
+      return e << 23;
+    }
+    if(x >= -149){
+      return 1 << (149 + x);
+    }   
+    return 0;
 }
