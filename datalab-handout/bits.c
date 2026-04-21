@@ -286,7 +286,6 @@ int isLessOrEqual(int x, int y) {
   int x_sign = (x >> 31) & 1;
   int y_sign = (y >> 31) & 1; 
   int t = ~y + 1;
-  int t_sign = (t >> 31) & 1;
 //异号直接判断符号
   int diff_sign = x_sign ^ y_sign;
 //同号
@@ -344,27 +343,23 @@ int logicalNeg(int x) {
  * 
  */
 int howManyBits(int x) {
+  int m_16,m_8,m_4,m_2,m_1;
   int x_sign = x >> 31;
   int m = x ^ x_sign;
 
   //检测 高16位数
-  int m_16 = (!!(m >> 16)) << 4;
+  m_16 = (!!(m >> 16)) << 4;
   m = m >> m_16;
-  
-  //检测 剩余的位数
-  int m_8 =  (!!(m >> 8))<< 3;
+  m_8 =  (!!(m >> 8))<< 3;
   m = m >> m_8;
-
-  int m_4 = (!!(m >> 4))<<2;
+  m_4 = (!!(m >> 4))<<2;
   m = m >> m_4;
-
-  int m_2 = (!!(m >> 2))<<1;
+  m_2 = (!!(m >> 2))<<1;
   m = m >> m_2;
-
-  int m_1 = (!!(m >> 1));
+  m_1 = (!!(m >> 1));
   m = m >> m_1;
   
-  return m_16 + m_8 + m_4 + m_2 + m_1 + m + 1;
+  return m_16 + m_8 + m_4 + m_2 + m_1 + m + 1 ;
 }
 //float
 /* 
